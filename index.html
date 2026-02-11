@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ultimate Pronunciation Trainer</title>
+<title>Pronunciation Trainer</title>
 
 <style>
 body{
-  font-family: sans-serif;
+  font-family:sans-serif;
   text-align:center;
   padding:20px;
   background:#f4f7f6;
@@ -44,87 +44,61 @@ button:hover{
 
 <button onclick="startRecognition()">🎤 Speak</button>
 <button onclick="playCorrectAudio()">🔊 Listen</button>
-<button onclick="pickRandom()">➡ NEXT</button>
+<button id="nextBtn" onclick="nextWord()" disabled>➡ NEXT</button>
 
 <div id="score"></div>
 
 <script>
-// ============================
-// 2000 ITEM GENERATOR
-// ============================
+// =================
+// データ生成（約2000）
+// =================
 
-const coreWords = [
-"the","be","to","of","and","a","in","that","have","I","it","for","not","on","with","he","as","you","do","at",
-"this","but","his","by","from","they","we","say","her","she","or","an","will","my","one","all","would","there",
-"time","year","people","way","day","man","thing","woman","life","child","world","school","state","family",
-"student","group","country","problem","hand","part","place","case","week","company","system","program",
-"question","work","government","number","night","point","home","water","room","mother","area","money",
-"story","fact","month","lot","right","study","book","eye","job","word","business","issue","side","kind",
-"head","house","service","friend","father","power","hour","game","line","end","member","law","car",
-"city","community","name","president","team","minute","idea","kid","body","information","back","parent",
-"face","others","level","office","door","health","person","art","war","history","party","result","change"
+const words = [
+"the","be","to","of","and","a","in","that","have","I","it","for","not","on","with",
+"he","as","you","do","at","this","but","his","by","from","they","we","say","her",
+"she","or","an","will","my","one","all","would","there","time","year","people",
+"way","day","man","thing","woman","life","child","world","school","family"
 ];
 
-const basePhrases = [
+const phrases = [
 "How are you?",
 "Nice to meet you.",
 "Thank you very much.",
 "Could you help me?",
 "I don't understand.",
-"Please say that again.",
 "What do you think?",
-"I would like some coffee.",
-"Can I ask a question?",
-"That sounds good.",
-"Where are you from?",
-"How much is this?",
-"What time is it?",
 "I am learning English.",
-"Let's get started."
-];
-
-const baseSentences = [
-"I am practicing English pronunciation every day.",
-"Speaking clearly is important for communication.",
-"I want to improve my speaking skills.",
-"Confidence comes from practice.",
-"Learning English opens many opportunities.",
-"This application helps me train my pronunciation.",
-"I will keep practicing until I improve.",
-"Listening carefully helps pronunciation.",
-"I enjoy learning new expressions.",
-"Practice makes perfect."
+"Please say that again."
 ];
 
 let items = [];
 
 while(items.length < 2000){
-  const w = coreWords[Math.floor(Math.random()*coreWords.length)];
-  const p = basePhrases[Math.floor(Math.random()*basePhrases.length)];
-  const s = baseSentences[Math.floor(Math.random()*baseSentences.length)];
-
+  const w = words[Math.floor(Math.random()*words.length)];
+  const p = phrases[Math.floor(Math.random()*phrases.length)];
   items.push(w);
   items.push("very " + w);
   items.push(w + " today");
   items.push(p);
-  items.push(s);
 }
 
-// ============================
-// APP LOGIC
-// ============================
+// =================
+// アプリロジック
+// =================
 
 let currentText = "";
 const textDiv = document.getElementById("text");
 const scoreDiv = document.getElementById("score");
+const nextBtn = document.getElementById("nextBtn");
 
-function pickRandom(){
+function nextWord(){
   currentText = items[Math.floor(Math.random()*items.length)];
   textDiv.textContent = currentText;
   scoreDiv.textContent = "";
+  nextBtn.disabled = true;
 }
 
-pickRandom();
+nextWord();
 
 // 音声再生
 function playCorrectAudio(){
@@ -160,6 +134,12 @@ recognition.onresult = function(event){
   scoreDiv.innerHTML =
   `You said: "<b>${spoken}</b>"<br>
    Score: <b>${score}%</b>`;
+
+  // 🔊 正解音声を自動再生
+  playCorrectAudio();
+
+  // ➡ NEXTボタン有効化
+  nextBtn.disabled = false;
 };
 
 recognition.onerror = function(){
