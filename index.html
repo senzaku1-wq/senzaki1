@@ -20,6 +20,7 @@ body{
 button{
   font-size:18px;
   padding:12px 24px;
+  margin:8px;
   border:none;
   border-radius:8px;
   background:#2ecc71;
@@ -38,8 +39,13 @@ button:hover{
 <body>
 
 <h1>Pronunciation Trainer</h1>
+
 <div id="text"></div>
+
 <button onclick="startRecognition()">🎤 Speak</button>
+<button onclick="playCorrectAudio()">🔊 Listen</button>
+<button onclick="pickRandom()">➡ NEXT</button>
+
 <div id="score"></div>
 
 <script>
@@ -92,7 +98,6 @@ const baseSentences = [
 
 let items = [];
 
-// Expand to ~2000 automatically
 while(items.length < 2000){
   const w = coreWords[Math.floor(Math.random()*coreWords.length)];
   const p = basePhrases[Math.floor(Math.random()*basePhrases.length)];
@@ -115,47 +120,3 @@ const scoreDiv = document.getElementById("score");
 
 function pickRandom(){
   currentText = items[Math.floor(Math.random()*items.length)];
-  textDiv.textContent = currentText;
-  scoreDiv.textContent = "";
-}
-
-pickRandom();
-
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = new SpeechRecognition();
-recognition.lang = "en-US";
-
-function similarity(a,b){
-  a = a.toLowerCase();
-  b = b.toLowerCase();
-  let matches = 0;
-  for(let i=0;i<Math.min(a.length,b.length);i++){
-    if(a[i]===b[i]) matches++;
-  }
-  return Math.round((matches / b.length)*100);
-}
-
-function startRecognition(){
-  scoreDiv.textContent = "Listening...";
-  recognition.start();
-}
-
-recognition.onresult = function(event){
-  const spoken = event.results[0][0].transcript;
-  const score = similarity(spoken,currentText);
-
-  scoreDiv.innerHTML =
-  `You said: "<b>${spoken}</b>"<br>
-   Score: <b>${score}%</b>`;
-
-  setTimeout(pickRandom,1500);
-};
-
-recognition.onerror = function(){
-  scoreDiv.textContent = "Microphone error. Please allow microphone access.";
-};
-
-</script>
-
-</body>
-</html>
