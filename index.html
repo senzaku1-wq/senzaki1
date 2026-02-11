@@ -120,3 +120,53 @@ const scoreDiv = document.getElementById("score");
 
 function pickRandom(){
   currentText = items[Math.floor(Math.random()*items.length)];
+  textDiv.textContent = currentText;
+  scoreDiv.textContent = "";
+}
+
+pickRandom();
+
+// 音声再生
+function playCorrectAudio(){
+  const utterance = new SpeechSynthesisUtterance(currentText);
+  utterance.lang = "en-US";
+  speechSynthesis.speak(utterance);
+}
+
+// 音声認識
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
+recognition.lang = "en-US";
+
+function similarity(a,b){
+  a = a.toLowerCase();
+  b = b.toLowerCase();
+  let matches = 0;
+  for(let i=0;i<Math.min(a.length,b.length);i++){
+    if(a[i]===b[i]) matches++;
+  }
+  return Math.round((matches / b.length)*100);
+}
+
+function startRecognition(){
+  scoreDiv.textContent = "Listening...";
+  recognition.start();
+}
+
+recognition.onresult = function(event){
+  const spoken = event.results[0][0].transcript;
+  const score = similarity(spoken,currentText);
+
+  scoreDiv.innerHTML =
+  `You said: "<b>${spoken}</b>"<br>
+   Score: <b>${score}%</b>`;
+};
+
+recognition.onerror = function(){
+  scoreDiv.textContent = "Microphone error. Please allow microphone access.";
+};
+
+</script>
+
+</body>
+</html>
