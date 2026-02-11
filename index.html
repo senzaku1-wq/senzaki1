@@ -1,136 +1,161 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>English Pronunciation Trainer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Pronunciation Trainer</title>
 
 <style>
-body {
-    font-family: sans-serif;
-    background: #f4f7f6;
-    text-align: center;
-    padding: 40px;
+body{
+  font-family: sans-serif;
+  text-align:center;
+  padding:20px;
+  background:#f4f7f6;
 }
-
-.card {
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 6px 10px rgba(0,0,0,0.1);
-    max-width: 500px;
-    margin: auto;
+#text{
+  font-size:28px;
+  margin:30px 0;
+  font-weight:bold;
 }
-
-h1 { color: #2c3e50; }
-
-.target-word {
-    font-size: 1.8em;
-    color: #3498db;
-    font-weight: bold;
-    margin: 15px 0;
+button{
+  font-size:18px;
+  padding:12px 24px;
+  border:none;
+  border-radius:8px;
+  background:#2ecc71;
+  color:white;
 }
-
-button {
-    padding: 12px 22px;
-    font-size: 1em;
-    cursor: pointer;
-    border-radius: 8px;
-    border: none;
-    margin: 10px;
-    background: #2ecc71;
-    color: white;
+button:hover{
+  background:#27ae60;
 }
-
-button:hover { background: #27ae60; }
-
-#score {
-    font-size: 1.4em;
-    font-weight: bold;
-    margin-top: 15px;
+#score{
+  margin-top:20px;
+  font-size:20px;
 }
-
-#result {
-    margin-top: 15px;
-    text-align: left;
-}
-
-.word {
-    padding: 6px 10px;
-    margin: 5px 0;
-    border-radius: 6px;
-}
-
-.correct { background: #d5f5e3; color: #1e8449; }
-.wrong { background: #fadbd8; color: #922b21; }
 </style>
 </head>
 
 <body>
-<div class="card">
-    <h1>発音チェックくん</h1>
-    <p>このフレーズを一気に発音してね：</p>
 
-    <div class="target-word" id="targetText">good morning</div>
-
-    <button onclick="playModel()">🔊 お手本を聞く</button><br>
-    <button onclick="startCheck()">🎤 発音チェック</button>
-
-    <div id="score"></div>
-    <div id="result"></div>
-</div>
+<h1>Pronunciation Trainer</h1>
+<div id="text"></div>
+<button onclick="startRecognition()">🎤 Speak</button>
+<div id="score"></div>
 
 <script>
-const targetDiv = document.getElementById("targetText");
-const resultDiv = document.getElementById("result");
+// ============================
+// 2000 ITEM GENERATOR
+// ============================
+
+const coreWords = [
+"the","be","to","of","and","a","in","that","have","I","it","for","not","on","with","he","as","you","do","at",
+"this","but","his","by","from","they","we","say","her","she","or","an","will","my","one","all","would","there",
+"time","year","people","way","day","man","thing","woman","life","child","world","school","state","family",
+"student","group","country","problem","hand","part","place","case","week","company","system","program",
+"question","work","government","number","night","point","home","water","room","mother","area","money",
+"story","fact","month","lot","right","study","book","eye","job","word","business","issue","side","kind",
+"head","house","service","friend","father","power","hour","game","line","end","member","law","car",
+"city","community","name","president","team","minute","idea","kid","body","information","back","parent",
+"face","others","level","office","door","health","person","art","war","history","party","result","change"
+];
+
+const basePhrases = [
+"How are you?",
+"Nice to meet you.",
+"Thank you very much.",
+"Could you help me?",
+"I don't understand.",
+"Please say that again.",
+"What do you think?",
+"I would like some coffee.",
+"Can I ask a question?",
+"That sounds good.",
+"Where are you from?",
+"How much is this?",
+"What time is it?",
+"I am learning English.",
+"Let's get started."
+];
+
+const baseSentences = [
+"I am practicing English pronunciation every day.",
+"Speaking clearly is important for communication.",
+"I want to improve my speaking skills.",
+"Confidence comes from practice.",
+"Learning English opens many opportunities.",
+"This application helps me train my pronunciation.",
+"I will keep practicing until I improve.",
+"Listening carefully helps pronunciation.",
+"I enjoy learning new expressions.",
+"Practice makes perfect."
+];
+
+let items = [];
+
+// Expand to ~2000 automatically
+while(items.length < 2000){
+  const w = coreWords[Math.floor(Math.random()*coreWords.length)];
+  const p = basePhrases[Math.floor(Math.random()*basePhrases.length)];
+  const s = baseSentences[Math.floor(Math.random()*baseSentences.length)];
+
+  items.push(w);
+  items.push("very " + w);
+  items.push(w + " today");
+  items.push(p);
+  items.push(s);
+}
+
+// ============================
+// APP LOGIC
+// ============================
+
+let currentText = "";
+const textDiv = document.getElementById("text");
 const scoreDiv = document.getElementById("score");
 
-function playModel() {
-    const u = new SpeechSynthesisUtterance(targetDiv.innerText);
-    u.lang = "en-US";
-    speechSynthesis.speak(u);
+function pickRandom(){
+  currentText = items[Math.floor(Math.random()*items.length)];
+  textDiv.textContent = currentText;
+  scoreDiv.textContent = "";
 }
 
-function startCheck() {
-    const targetWords = targetDiv.innerText.toLowerCase().split(" ");
+pickRandom();
 
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = "en-US";
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
+recognition.lang = "en-US";
 
-    scoreDiv.innerHTML = "";
-    resultDiv.innerHTML = "👂 聞き取り中…";
-
-    recognition.onresult = (event) => {
-        const spokenText = event.results[0][0].transcript.toLowerCase();
-        const spokenWords = spokenText.split(" ");
-
-        let correctCount = 0;
-        let html = `<p>認識結果: "${spokenText}"</p>`;
-
-        targetWords.forEach((word, index) => {
-            const spoken = spokenWords[index] || "";
-            const correct = spoken === word;
-
-            if (correct) correctCount++;
-
-            html += `
-                <div class="word ${correct ? "correct" : "wrong"}">
-                    ${word} → ${spoken || "（未認識）"}
-                </div>
-            `;
-        });
-
-        const accuracy = Math.round((correctCount / targetWords.length) * 100);
-
-        scoreDiv.innerHTML = `📊 正確性：${accuracy}%`;
-        resultDiv.innerHTML = html;
-    };
-
-    recognition.onerror = () => {
-        resultDiv.innerHTML = "⚠ マイクの使用を許可してください。";
-    };
-
-    recognition.start();
+function similarity(a,b){
+  a = a.toLowerCase();
+  b = b.toLowerCase();
+  let matches = 0;
+  for(let i=0;i<Math.min(a.length,b.length);i++){
+    if(a[i]===b[i]) matches++;
+  }
+  return Math.round((matches / b.length)*100);
 }
+
+function startRecognition(){
+  scoreDiv.textContent = "Listening...";
+  recognition.start();
+}
+
+recognition.onresult = function(event){
+  const spoken = event.results[0][0].transcript;
+  const score = similarity(spoken,currentText);
+
+  scoreDiv.innerHTML =
+  `You said: "<b>${spoken}</b>"<br>
+   Score: <b>${score}%</b>`;
+
+  setTimeout(pickRandom,1500);
+};
+
+recognition.onerror = function(){
+  scoreDiv.textContent = "Microphone error. Please allow microphone access.";
+};
+
 </script>
+
 </body>
 </html>
